@@ -4,7 +4,7 @@ pipwave Plugin for WooCommerce developed by pipwave development team.
 
 Supported version
 -----------------
-- WooCommerce version 2.3.x WP 4.1.x and above
+- WooCommerce version 2.3.x WordPress 4.1.x and above
 
 Notes
 -----
