@@ -1,7 +1,5 @@
 pipwave_WooCommerce_Plugin
 ==========================
-Author: pipwave
-
 Tags: ecommerce, e-commerce, shop, cart, checkout, downloadable, downloads, payment, gateway
 
 Requires at least: WooCommerce version 2.3.x WordPress 4.1.x and above
@@ -9,10 +7,6 @@ Requires at least: WooCommerce version 2.3.x WordPress 4.1.x and above
 Tested up to: WooCommerce version 2.3.x WordPress 4.5.x
 
 Stable tag: 1.0.0
-
-License: MIT
-
-License URI: https://opensource.org/licenses/MIT
 
 Description
 ===========
