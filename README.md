@@ -1,19 +1,21 @@
-pipwave_WooCommerce_Plugin
-==========================
-pipwave Plugin for WooCommerce developed by pipwave development team.
+=== pipwave_WooCommerce_Plugin ===
+Author: pipwave
+Tags: ecommerce, e-commerce, shop, cart, checkout, downloadable, downloads, payment, gateway
+Requires at least: WooCommerce version 2.3.x WordPress 4.1.x and above
+Tested up to: WooCommerce version 2.3.x WordPress 4.5.x
+Stable tag: 1.0.0
+License: MIT
+License URI: https://opensource.org/licenses/MIT
 
-Supported version
------------------
-- WooCommerce version 2.3.x WordPress 4.1.x and above
+== Description ==
+pipwave_WooCommerce_Plugin is simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
 
-Notes
------
+== Notes ==
 pipwave is not responsible for any problems that might arise from the use of this module. 
 Use at your own risk. Please backup any critical data before proceeding. For any query or 
 assistance, please email support@pipwave.com
 
-How to Install pipwave WooCommerce Plugin
------------------------------------------
+== Installation ==
 1. Download this repository.
 
 2. Login to your WordPress WooCommerce admin dashboard, navigate to the Plugins menu and click Add New.
@@ -32,6 +34,9 @@ How to Install pipwave WooCommerce Plugin
 
 **Please feel free to contact pipwave directly with any integration questions.**
 
-Issues
-------
+== Changelog ==
+= 1.0.0 =
+* First commit.
+
+== Issues ==
 Submit issue to this repository or email to our support@pipwave.com
