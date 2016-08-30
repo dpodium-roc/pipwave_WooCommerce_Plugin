@@ -1,15 +1,5 @@
 pipwave_WooCommerce_Plugin
 ==========================
-Tags: ecommerce, e-commerce, shop, cart, checkout, downloadable, downloads, payment, gateway
-
-Requires at least: WooCommerce version 2.3.x WordPress 4.1.x and above
-
-Tested up to: WooCommerce version 2.3.x WordPress 4.5.x
-
-Stable tag: 1.0.0
-
-Description
-===========
 pipwave_WooCommerce_Plugin is simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
 
 Notes
@@ -37,11 +27,6 @@ Installation
 8. Save the configuration and it's done!
 
 **Please feel free to contact pipwave directly with any integration questions.**
-
-Changelog
-=========
-= 1.0.0 =
-* First commit.
 
 Issues
 ======
