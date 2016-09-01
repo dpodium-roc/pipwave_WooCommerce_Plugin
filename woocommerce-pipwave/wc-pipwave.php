@@ -9,13 +9,13 @@
 /**
  * Plugin Name: WooCommerce pipwave
  * Plugin URI: https://www.pipwave.com/
- * Description: WooCommerce pipwave | Simple, reliable, and cost-effective way to accept payments online.
+ * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
  * Version: 1.0.0
- * License: MIT
+ * License: GPLv3
  */
-function require_woocommerce() {
+function pipwave_wc_require_woocommerce() {
     $message = '<div class="error">';
     $message .= '<p>' . __('WooCommerce pipwave requires <a href="http://wordpress.org/extend/plugins/woocommerce/">WooCommerce</a>', 'wc_pipwave') . '</p>';
     $message .= '</div>';
@@ -27,7 +27,7 @@ add_action('plugins_loaded', 'woocommerce_pipwave', 0);
 // Load pipwave plugin function
 function woocommerce_pipwave() {
     if (!class_exists('WC_Payment_Gateway')) {
-        add_action('admin_notices', 'require_woocommerce');
+        add_action('admin_notices', 'pipwave_wc_require_woocommerce');
         return;
     }
 
@@ -70,13 +70,13 @@ function woocommerce_pipwave() {
             // Save configuration
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
             // Payment listener/API hook
-            add_action('woocommerce_api_wc_gateway_pipwave', array($this, 'callback_handler'));
-            add_action('pipwave_update_payment_method', array(&$this, 'update_payment_method'));
-            add_action('pipwave_request_callback', array(&$this, 'pipwave_response_callback'));
+            add_action('woocommerce_api_wc_gateway_' . $this->id, array($this, 'pipwave_wc_callback_handler'));
+            add_action('pipwave_wc_update_payment_method', array(&$this, 'pipwave_wc_update_payment_method'));
+            add_action('pipwave_wc_response_callback', array(&$this, 'pipwave_wc_response_callback'));
 
             // Check if api_key or api_secret is empty
-            $this->api_key == '' ? add_action('admin_notices', array(&$this, 'error_api_key')) : '';
-            $this->api_secret == '' ? add_action('admin_notices', array(&$this, 'error_api_secret')) : '';
+            $this->api_key == '' ? add_action('admin_notices', array(&$this, 'pipwave_wc_error_api_key')) : '';
+            $this->api_secret == '' ? add_action('admin_notices', array(&$this, 'pipwave_wc_error_api_secret')) : '';
         }
 
         // Admin Panel Options
@@ -234,7 +234,7 @@ function woocommerce_pipwave() {
                 'action' => $data['action'],
                 'timestamp' => $data['timestamp']
             );
-            $data['signature'] = $this->_generateSignature($signatureParam);
+            $data['signature'] = $this->_pipwave_wc_generate_signature($signatureParam);
 
             foreach ($order->get_items() as $item) {
                 $product = $order->get_product_from_item($item);
@@ -248,7 +248,7 @@ function woocommerce_pipwave() {
                 );
             }
 
-            $response = $this->_sendRequest($data);
+            $response = $this->_pipwave_wc_send_request($data);
             if ($response['status'] == 200) {
                 $api_data = json_encode([
                     'api_key' => $this->api_key,
@@ -312,18 +312,17 @@ EOD;
          * Update order status by pipwave response
          * transaction status
          */
-        function callback_handler() {
-            // http://woo.localhost/index.php/wc-api/WC_Gateway_Pipwave
+        function pipwave_wc_callback_handler() {
             @ob_clean();
             header('HTTP/1.1 200 OK');
             $post_content = file_get_contents("php://input");
             $post_data = json_decode($post_content, true);
-            do_action("pipwave_request_callback", $post_data);
+            do_action("pipwave_wc_response_callback", $post_data);
             exit();
         }
 
         // pipwave callback function
-        function pipwave_response_callback($post_data) {
+        function pipwave_wc_response_callback($post_data) {
             global $woocommerce;
             $timestamp = (isset($post_data['timestamp']) && !empty($post_data['timestamp'])) ? $post_data['timestamp'] : time();
             $pw_id = (isset($post_data['pw_id']) && !empty($post_data['pw_id'])) ? $post_data['pw_id'] : '';
@@ -343,7 +342,7 @@ EOD;
                 'transaction_status' => $transaction_status,
                 'api_secret' => $this->api_secret,
             );
-            $generatedSignature = $this->_generateSignature($data_for_signature);
+            $generatedSignature = $this->_pipwave_wc_generate_signature($data_for_signature);
             if ($signature != $generatedSignature) {
                 $transaction_status = -1;
             }
@@ -365,29 +364,29 @@ EOD;
                 $order->add_order_note('[pipwave] Payment Status: INVALID TRANSACTION' . '<br>pipwave Transaction ID: ' . $pw_id);
                 $order->update_status('on-hold', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
             } else if ($transaction_status == 5) {
-                do_action('pipwave_update_payment_method', array('order_id' => $order_id, 'payment_method' => $payment_method));
+                do_action('pipwave_wc_update_payment_method', array('order_id' => $order_id, 'payment_method' => $payment_method));
             }
         }
 
-        function update_payment_method($arg) {
+        function pipwave_wc_update_payment_method($arg) {
             update_post_meta($arg['order_id'], '_payment_method_title', $arg['payment_method']);
         }
 
-        public function error_api_key() {
+        public function pipwave_wc_error_api_key() {
             $message = '<div class="error">';
             $message .= '<p>' . sprintf(__('<strong>pipwave error:</strong> API key cannot be blank. %sConfigure here%s.', 'wc_pipwave'), '<a href="' . get_admin_url() . 'admin.php?page=wc-settings&tab=checkout&section=pipwave">', '</a>') . '</p>';
             $message .= '</div>';
             echo $message;
         }
 
-        public function error_api_secret() {
+        public function pipwave_wc_error_api_secret() {
             $message = '<div class="error">';
             $message .= '<p>' . sprintf(__('<strong>pipwave error:</strong> API secret cannot be blank. %sConfigure here%s.', 'wc_pipwave'), '<a href="' . get_admin_url() . 'admin.php?page=wc-settings&tab=checkout&section=pipwave">', '</a>') . '</p>';
             $message .= '</div>';
             echo $message;
         }
 
-        private function _generateSignature($array) {
+        private function _pipwave_wc_generate_signature($array) {
             ksort($array);
             $signature = "";
             foreach ($array as $key => $value) {
@@ -396,7 +395,7 @@ EOD;
             return sha1($signature);
         }
 
-        private function _sendRequest($data) {
+        private function _pipwave_wc_send_request($data) {
             // test mode is on
             if ($this->test_mode == 'yes') {
                 $url = "https://staging-api.pipwave.com/payment";
