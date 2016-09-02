@@ -1,6 +1,6 @@
 pipwave_WooCommerce_Plugin
 ==========================
-pipwave_WooCommerce_Plugin is simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
+pipwave WooCommerce is simple, reliable and cost-effective plugin that helps WooCommerce merchants sell online. It's FREE!
 
 Notes
 =====
@@ -14,7 +14,7 @@ Installation
 
 2. Login to your WordPress WooCommerce admin dashboard, navigate to the Plugins menu and click Add New.
 
-3. Install the plugin woocommerce-pipwave folder from the downloaded repository.
+3. Unzip pipwave_WooCommerce_Plugin.zip. Install/upload 'pipwave-woocommerce' directory to '/wp-content/plugins/'.
 
 4. After installation is successful, activate the plugin.
 

@@ -22,10 +22,10 @@ function pipwave_wc_require_woocommerce() {
     echo $message;
 }
 
-add_action('plugins_loaded', 'woocommerce_pipwave', 0);
+add_action('plugins_loaded', 'pipwave_woocommerce', 0);
 
 // Load pipwave plugin function
-function woocommerce_pipwave() {
+function pipwave_woocommerce() {
     if (!class_exists('WC_Payment_Gateway')) {
         add_action('admin_notices', 'pipwave_wc_require_woocommerce');
         return;
