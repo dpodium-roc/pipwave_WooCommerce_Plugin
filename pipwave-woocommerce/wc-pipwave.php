@@ -175,7 +175,7 @@ function pipwave_woocommerce() {
                 'action' => 'initiate-payment',
                 'timestamp' => time(),
                 'api_key' => $this->api_key,
-                'txn_id' => $order->id . "",
+                'txn_id' => $order->get_order_number() . "",
                 'amount' => $order->order_total,
                 'currency_code' => get_woocommerce_currency(),
                 'short_description' => 'Payment for Order#' . $order->id,
@@ -216,7 +216,8 @@ function pipwave_woocommerce() {
                 'api_override' => array(
                     'success_url' => $this->get_return_url($order),
                     'fail_url' => $this->get_return_url($order),
-                    'notification_url' => str_replace('https:', 'http:', add_query_arg('wc-api', 'WC_Gateway_Pipwave', home_url('/')))
+                    'notification_url' => str_replace('https:', 'http:', add_query_arg('wc-api', 'WC_Gateway_Pipwave', home_url('/'))),
+                    'notification_extra_param1' => $order_id . ""
                 )
             );
             // Login user
@@ -266,6 +267,7 @@ function pipwave_woocommerce() {
                         var pwconfig = $api_data;
                         (function (_, p, w, s, d, k) {
                             var a = _.createElement("script");
+                            a.setAttribute('data-main', w + s);
                             a.setAttribute('src', w + d);
                             a.setAttribute('id', k);
                             setTimeout(function() {
@@ -326,7 +328,8 @@ EOD;
             global $woocommerce;
             $timestamp = (isset($post_data['timestamp']) && !empty($post_data['timestamp'])) ? $post_data['timestamp'] : time();
             $pw_id = (isset($post_data['pw_id']) && !empty($post_data['pw_id'])) ? $post_data['pw_id'] : '';
-            $order_id = (isset($post_data['txn_id']) && !empty($post_data['txn_id'])) ? $post_data['txn_id'] : '';
+            $order_number = (isset($post_data['txn_id']) && !empty($post_data['txn_id'])) ? $post_data['txn_id'] : '';
+            $order_id = (isset($post_data['extra_param1']) && !empty($post_data['extra_param1'])) ? $post_data['extra_param1'] : '';
             $amount = (isset($post_data['amount']) && !empty($post_data['amount'])) ? $post_data['amount'] : '';
             $currency_code = (isset($post_data['currency_code']) && !empty($post_data['currency_code'])) ? $post_data['currency_code'] : '';
             $transaction_status = (isset($post_data['transaction_status']) && !empty($post_data['transaction_status'])) ? $post_data['transaction_status'] : '';
@@ -336,7 +339,7 @@ EOD;
                 'timestamp' => $timestamp,
                 'api_key' => $this->api_key,
                 'pw_id' => $pw_id,
-                'txn_id' => $order_id,
+                'txn_id' => $order_number,
                 'amount' => $amount,
                 'currency_code' => $currency_code,
                 'transaction_status' => $transaction_status,
@@ -348,23 +351,27 @@ EOD;
             }
 
             $order = new WC_Order($order_id);
-            if ($transaction_status == 1) { // failed
-                $order->add_order_note('[pipwave] Payment Status: FAILED' . '<br>pipwave Transaction ID: ' . $pw_id);
-                $order->update_status('failed', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
-            } else if ($transaction_status == 2) { // cancelled
-                $order->add_order_note('[pipwave] Payment Status: CANCELLED' . '<br>pipwave Transaction ID: ' . $pw_id);
-                $order->update_status('cancelled', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
-            } else if ($transaction_status == 10) { // complete
-                $order->add_order_note('[pipwave] Payment Status: COMPLETE' . '<br>pipwave Transaction ID: ' . $pw_id);
-                $order->payment_complete();
-            } else if ($transaction_status == 20) { // refunded
-                $order->add_order_note('[pipwave] Payment Status: REFUNDED' . '<br>pipwave Transaction ID: ' . $pw_id);
-                $order->update_status('refunded', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
-            } else if ($transaction_status == -1) {
-                $order->add_order_note('[pipwave] Payment Status: INVALID TRANSACTION' . '<br>pipwave Transaction ID: ' . $pw_id);
-                $order->update_status('on-hold', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
-            } else if ($transaction_status == 5) {
-                do_action('pipwave_wc_update_payment_method', array('order_id' => $order_id, 'payment_method' => $payment_method));
+            if ($order->get_order_number() != $order_number) {
+                $order->add_order_note('[pipwave] Order number mismatch.' . '<br>pipwave Transaction ID: ' . $pw_id);
+            } else {
+                if ($transaction_status == 1) { // failed
+                    $order->add_order_note('[pipwave] Payment Status: FAILED' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->update_status('failed', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
+                } else if ($transaction_status == 2) { // cancelled
+                    $order->add_order_note('[pipwave] Payment Status: CANCELLED' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->update_status('cancelled', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
+                } else if ($transaction_status == 10) { // complete
+                    $order->add_order_note('[pipwave] Payment Status: COMPLETE' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->payment_complete();
+                } else if ($transaction_status == 20) { // refunded
+                    $order->add_order_note('[pipwave] Payment Status: REFUNDED' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->update_status('refunded', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
+                } else if ($transaction_status == -1) {
+                    $order->add_order_note('[pipwave] Payment Status: INVALID TRANSACTION' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->update_status('on-hold', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
+                } else if ($transaction_status == 5) {
+                    do_action('pipwave_wc_update_payment_method', array('order_id' => $order_id, 'payment_method' => $payment_method));
+                }
             }
         }
 

@@ -21,6 +21,10 @@ anyone, anywhere in the world with more than <strong>100+ payment methods</stron
 All you need to do is link your payment account with pipwave, configure your pipwave API key and secret 
 in your WooCommerce store and it's done!
 
+<h3>Notes</h3>
+For merchant who using same pipwave account in MULTIPLE sites, kindly prefix your order number 
+to prevent duplicate order number issue.
+
 == Installation ==
 
 1. Download pipwave WooCommerce.
@@ -64,6 +68,10 @@ Yes you can! Join in on our [GitHub repository](https://github.com/dpodium/pipwa
 8. Sample checkout page after order is placed. Payment methods will be shown for buyer to choose to make payment.
 
 == Changelog ==
+
+= 1.0.4 =
+* Update pipwave SDK script
+* Use customized order number as txn_id to prevent duplicate txn_id issue for merchant who has multiple sites.
 
 = 1.0.3 =
 * Update description, installation & tags in readme.
