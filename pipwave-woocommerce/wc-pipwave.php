@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.0.0
+ * @version 1.0.5
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.0.0
+ * Version: 1.0.5
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
@@ -64,6 +64,7 @@ function pipwave_woocommerce() {
             $this->api_key = $this->settings['api_key'];
             $this->api_secret = $this->settings['api_secret'];
             $this->test_mode = $this->settings['test_mode'];
+            $this->surcharge_group = $this->settings['surcharge_group'];
 
             // Actions.
             add_action('woocommerce_receipt_' . $this->id, array($this, 'receipt_page'));
@@ -129,28 +130,28 @@ function pipwave_woocommerce() {
                     'type' => 'text',
                     'description' => __('The title of which the payer sees during checkout.', 'wc_pipwave'),
                     'default' => __('pipwave', 'wc_pipwave'),
-                    'desc_tip' => true,
+                    'desc_tip' => false,
                 ),
                 'description' => array(
                     'title' => __('Description', 'wc_pipwave'),
                     'type' => 'textarea',
                     'description' => __('The description of which the payer sees during checkout.', 'wc_pipwave'),
                     'default' => '',
-                    'desc_tip' => true,
+                    'desc_tip' => false,
                 ),
                 'api_key' => array(
                     'title' => __('pipwave API Key', 'wc_pipwave'),
                     'type' => 'text',
-                    'description' => __('API key provided by pipwave', 'wc_pipwave'),
+                    'description' => __("API Key provided by pipwave in <a href='https://merchant.pipwave.com/development-setting/index' target='_blank'>Development > Setting</a>", 'wc_pipwave'),
                     'default' => '',
-                    'desc_tip' => true,
+                    'desc_tip' => false,
                 ),
                 'api_secret' => array(
                     'title' => __('pipwave API Secret', 'wc_pipwave'),
                     'type' => 'password',
-                    'description' => __('API secret provided by pipwave', 'wc_pipwave'),
+                    'description' => __("API Secret provided by pipwave in <a href='https://merchant.pipwave.com/development-setting/index' target='_blank'>Development > Setting</a>", 'wc_pipwave'),
                     'default' => '',
-                    'desc_tip' => true,
+                    'desc_tip' => false,
                 ),
                 'test_mode' => array(
                     'title' => __('Test Mode', 'wc_pipwave'),
@@ -158,7 +159,14 @@ function pipwave_woocommerce() {
                     'description' => __('Turn on pipwave test mode for testing purpose', 'wc_pipwave'),
                     'label' => __('Enable Test Mode', 'wc_pipwave'),
                     'default' => '',
-                    'desc_tip' => true, 'desc_tip' => true,
+                    'desc_tip' => false,
+                ),
+                'surcharge_group' => array(
+                    'title' => __('Payment Processing Fee Group Reference ID', 'wc_pipwave'),
+                    'type' => 'text',
+                    'description' => __("Payment Processing Fee Group configured in pipwave <a href='https://merchant.pipwave.com/account/set-processing-fee-group#general-processing-fee-group' target='_blank'>Account > General</a>.<br>Processing fee will be applied on all customers once this setting is configured.", 'wc_pipwave'),
+                    'default' => '',
+                    'desc_tip' => false,
                 ),
             );
         }
@@ -350,24 +358,25 @@ EOD;
                 $transaction_status = -1;
             }
 
+            $with_warning_msg = ($post_data['status'] == 3001) ? " (with warning)" : '';
             $order = new WC_Order($order_id);
             if ($order->get_order_number() != $order_number) {
                 $order->add_order_note('[pipwave] Order number mismatch.' . '<br>pipwave Transaction ID: ' . $pw_id);
             } else {
                 if ($transaction_status == 1) { // failed
-                    $order->add_order_note('[pipwave] Payment Status: FAILED' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("[pipwave] Payment Status: Failed{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->update_status('failed', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == 2) { // cancelled
-                    $order->add_order_note('[pipwave] Payment Status: CANCELLED' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("[pipwave] Payment Status: Cancelled{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->update_status('cancelled', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == 10) { // complete
-                    $order->add_order_note('[pipwave] Payment Status: COMPLETE' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("[pipwave] Payment Status: Complete{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->payment_complete();
                 } else if ($transaction_status == 20) { // refunded
-                    $order->add_order_note('[pipwave] Payment Status: REFUNDED' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("[pipwave] Payment Status: Refunded{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->update_status('refunded', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == -1) {
-                    $order->add_order_note('[pipwave] Payment Status: INVALID TRANSACTION' . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note('[pipwave] Payment Status: Invalid Transaction' . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->update_status('on-hold', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == 5) {
                     do_action('pipwave_wc_update_payment_method', array('order_id' => $order_id, 'payment_method' => $payment_method));
