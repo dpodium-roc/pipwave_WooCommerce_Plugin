@@ -198,15 +198,17 @@ function pipwave_woocommerce() {
                     'last_name' => $order->billing_last_name,
                     'contact_no' => $order->billing_phone,
                     'country_code' => $order->billing_country,
+                    'surcharge_group' => $this->surcharge_group
                 ),
                 'billing_info' => array(
                     'name' => $order->billing_first_name . " " . $order->billing_last_name,
                     'address1' => $order->billing_address_1,
                     'address2' => $order->billing_address_2,
                     'city' => $order->billing_city,
-                    'state' => $order->billing_state,
+                    'state' => WC()->countries->states[$order->billing_country][$order->billing_state],
                     'zip' => $order->billing_postcode,
-                    'country' => $order->billing_country,
+                    'country' => WC()->countries->countries[$order->billing_country],
+                    'country_iso2' => $order->billing_country,
                     'contact_no' => $order->billing_phone,
                     'email' => $order->billing_email,
                 ),
@@ -215,9 +217,10 @@ function pipwave_woocommerce() {
                     'address1' => $order->shipping_address_1,
                     'address2' => $order->shipping_address_2,
                     'city' => $order->shipping_city,
-                    'state' => $order->shipping_state,
+                    'state' => WC()->countries->states[$order->shipping_country][$order->shipping_state],
                     'zip' => $order->shipping_postcode,
-                    'country' => $order->shipping_country,
+                    'country' => WC()->countries->countries[$order->shipping_country],
+                    'country_iso2' => $order->shipping_country,
                     'contact_no' => $order->shipping_phone,
                     'email' => $order->shipping_email,
                 ),
@@ -361,25 +364,28 @@ EOD;
             $with_warning_msg = ($post_data['status'] == 3001) ? " (with warning)" : '';
             $order = new WC_Order($order_id);
             if ($order->get_order_number() != $order_number) {
-                $order->add_order_note('[pipwave] Order number mismatch.' . '<br>pipwave Transaction ID: ' . $pw_id);
+                $order->add_order_note('Order number mismatch.' . '<br>pipwave Transaction ID: ' . $pw_id);
             } else {
                 if ($transaction_status == 1) { // failed
-                    $order->add_order_note("[pipwave] Payment Status: Failed{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Failed{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->update_status('failed', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == 2) { // cancelled
-                    $order->add_order_note("[pipwave] Payment Status: Cancelled{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Cancelled{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->update_status('cancelled', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == 10) { // complete
-                    $order->add_order_note("[pipwave] Payment Status: Complete{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Complete{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->update_status('processing', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                     $order->payment_complete();
                 } else if ($transaction_status == 20) { // refunded
-                    $order->add_order_note("[pipwave] Payment Status: Refunded{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Refunded{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     $order->update_status('refunded', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == -1) {
-                    $order->add_order_note('[pipwave] Payment Status: Invalid Transaction' . '<br>pipwave Transaction ID: ' . $pw_id);
-                    $order->update_status('on-hold', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
+                    $order->add_order_note('Signature mismatch.' . '<br>pipwave Transaction ID: ' . $pw_id);
                 } else if ($transaction_status == 5) {
+                    $order->add_order_note("Payment Status: Pending{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
                     do_action('pipwave_wc_update_payment_method', array('order_id' => $order_id, 'payment_method' => $payment_method));
+                } else {
+                    $order->add_order_note("Undefined transaction status {$transaction_status}" . '<br>pipwave Transaction ID: ' . $pw_id);
                 }
             }
         }
