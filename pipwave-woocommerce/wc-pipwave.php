@@ -268,7 +268,6 @@ function pipwave_woocommerce() {
                 ]);
                 $sdk_url = ($this->test_mode == 'yes') ? '//staging-checkout.pipwave.com/sdk/' : '//checkout.pipwave.com/sdk/';
                 $result = <<<EOD
-                    <div style="margin-bottom: 20px;"><img src="$this->icon"></div>
                     <div id="pwscript" class="text-center"></div>
                     <div id="pwloading" style="text-align: center;">
                         <i class="fa fa-spinner fa-spin fa-fw margin-bottom" style="font-size: 3em; color: #7a7a7a;"></i>
@@ -427,6 +426,7 @@ EOD;
 
             $agent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)";
             $ch = curl_init();
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('x-api-key' => $this->api_key));
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             curl_setopt($ch, CURLOPT_URL, $url);
