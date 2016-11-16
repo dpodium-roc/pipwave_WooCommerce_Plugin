@@ -327,6 +327,7 @@ EOD;
         function pipwave_wc_callback_handler() {
             @ob_clean();
             header('HTTP/1.1 200 OK');
+            echo "OK";
             $post_content = file_get_contents("php://input");
             $post_data = json_decode($post_content, true);
             do_action("pipwave_wc_response_callback", $post_data);
