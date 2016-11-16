@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.0.5
+ * @version 1.0.6
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.0.5
+ * Version: 1.0.6
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
