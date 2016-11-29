@@ -265,7 +265,7 @@ function pipwave_woocommerce() {
                 $api_data = json_encode([
                     'api_key' => $this->api_key,
                     'token' => $response['token'],
-                    'caller_version' => 'WordPress Version ' . get_bloginfo('version')
+                    'caller_version' => 'WordPress_v' . get_bloginfo('version')
                 ]);
                 $sdk_url = ($this->test_mode == 'yes') ? '//staging-checkout.pipwave.com/sdk/' : '//checkout.pipwave.com/sdk/';
                 $result = <<<EOD
