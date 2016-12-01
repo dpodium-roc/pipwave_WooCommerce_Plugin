@@ -3,7 +3,7 @@ Contributors: dpodium
 Tags: ecommerce, e-commerce, commerce, shop, cart, checkout, downloadable, downloads, payment, gateway, paypal, ipay88, bitpay
 Requires at least: 4.1
 Tested up to: 4.5
-Stable tag: 1.0.8
+Stable tag: 1.0.9
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -70,6 +70,9 @@ Yes you can! Join in on our [GitHub repository](https://github.com/dpodium/pipwa
 8. Sample checkout page after order is placed. Payment methods will be shown for buyer to choose to make payment.
 
 == Changelog ==
+
+= 1.0.9 =
+* Update CURL option `CURLOPT_SSL_VERIFYHOST1 value to 2
 
 = 1.0.8 =
 * Update `caller_version` value follow pipwave standard (ShoppingCartName_v1.0.0)
