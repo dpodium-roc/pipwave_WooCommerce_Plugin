@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.0.9
+ * @version 1.0.10
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.0.9
+ * Version: 1.0.10
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
@@ -267,12 +267,12 @@ function pipwave_woocommerce() {
                     'token' => $response['token'],
                     'caller_version' => 'WordPress_v' . get_bloginfo('version')
                 ]);
-                $sdk_url = ($this->test_mode == 'yes') ? '//staging-checkout.pipwave.com/sdk/' : '//checkout.pipwave.com/sdk/';
+                $sdk_url = ($this->test_mode == 'yes') ? '//staging-checkout.pipwave.com/sdk/' : '//secure.pipwave.com/sdk/';
+                $loading_img = ($this->test_mode == 'yes') ? '//staging-checkout.pipwave.com/images/loading.gif' : '//secure.pipwave.com/images/loading.gif';
                 $result = <<<EOD
                     <div id="pwscript" class="text-center"></div>
                     <div id="pwloading" style="text-align: center;">
-                        <i class="fa fa-spinner fa-spin fa-fw margin-bottom" style="font-size: 3em; color: #7a7a7a;"></i>
-                        <span class="sr-only">Loading...</span>
+                        <img src="$loading_img" />
                     </div>
                     <script type="text/javascript">
                         var pwconfig = $api_data;
