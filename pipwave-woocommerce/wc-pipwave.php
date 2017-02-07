@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.0.10
+ * @version 1.0.11
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.0.10
+ * Version: 1.0.11
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
@@ -428,7 +428,7 @@ EOD;
 
             $agent = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)";
             $ch = curl_init();
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('x-api-key' => $this->api_key));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('x-api-key:' . $this->api_key));
             curl_setopt($ch, CURLOPT_POST, 1);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
             curl_setopt($ch, CURLOPT_URL, $url);
