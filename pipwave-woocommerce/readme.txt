@@ -3,7 +3,7 @@ Contributors: dpodium
 Tags: ecommerce, e-commerce, commerce, shop, cart, checkout, downloadable, downloads, payment, gateway, paypal, ipay88, bitpay
 Requires at least: 4.1
 Tested up to: 4.5
-Stable tag: 1.0.11
+Stable tag: 1.1.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -71,6 +71,10 @@ Yes you can! Join in on our [GitHub repository](https://github.com/dpodium/pipwa
 
 == Changelog ==
 
+= 1.1.0 =
+* Update SDK javascript.
+* `aft_score` and `aft_status` is deprecated, use `pipwave_score` and `rules_action` instead.
+
 = 1.0.11 =
 * Fix incorrect x-api-key array value structure.
 
@@ -78,7 +82,7 @@ Yes you can! Join in on our [GitHub repository](https://github.com/dpodium/pipwa
 * Update loading image
 
 = 1.0.9 =
-* Update CURL option `CURLOPT_SSL_VERIFYHOST1 value to 2
+* Update CURL option `CURLOPT_SSL_VERIFYHOST` value to 2
 
 = 1.0.8 =
 * Update `caller_version` value follow pipwave standard (ShoppingCartName_v1.0.0)

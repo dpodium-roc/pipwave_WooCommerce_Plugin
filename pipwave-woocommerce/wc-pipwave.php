@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.0.11
+ * @version 1.1.0
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.0.11
+ * Version: 1.1.0
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
@@ -278,7 +278,6 @@ function pipwave_woocommerce() {
                         var pwconfig = $api_data;
                         (function (_, p, w, s, d, k) {
                             var a = _.createElement("script");
-                            a.setAttribute('data-main', w + s);
                             a.setAttribute('src', w + d);
                             a.setAttribute('id', k);
                             setTimeout(function() {
@@ -347,6 +346,11 @@ EOD;
             $transaction_status = (isset($post_data['transaction_status']) && !empty($post_data['transaction_status'])) ? $post_data['transaction_status'] : '';
             $payment_method = isset($post_data['payment_method_title']) ? __('pipwave', 'wc_pipwave') . " - " . $post_data['payment_method_title'] : $this->title;
             $signature = (isset($post_data['signature']) && !empty($post_data['signature'])) ? $post_data['signature'] : '';
+            // pipwave risk execution result
+            $pipwave_score = isset($post_data['pipwave_score']) ? $post_data['pipwave_score'] : '';
+            $rule_action = isset($post_data['rules_action']) ? $post_data['rules_action'] : '';
+            $message = isset($post_data['message']) ? $post_data['message'] : '';
+
             $data_for_signature = array(
                 'timestamp' => $timestamp,
                 'api_key' => $this->api_key,
@@ -367,26 +371,36 @@ EOD;
             if ($order->get_order_number() != $order_number) {
                 $order->add_order_note('Order number mismatch.' . '<br>pipwave Transaction ID: ' . $pw_id);
             } else {
+                $extra_note = [];
+                if (!empty($pipwave_score) && !empty($rule_action)) {
+                    $extra_note[] = sprintf("Rule Action: %s", $rule_action);
+                    $extra_note[] = sprintf("pipwave Score: %s", $pipwave_score);
+                }
+                if (!empty($message)) {
+                    $extra_note[] = sprintf("pipwave Message: %s", $message);
+                }
+                $extra_note = implode('<br>', $extra_note);
+                // Move order
                 if ($transaction_status == 1) { // failed
-                    $order->add_order_note("Payment Status: Failed{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Failed{$with_warning_msg}" . "<br>pipwave Transaction ID: {$pw_id}<br>{$extra_note}");
                     $order->update_status('failed', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == 2) { // cancelled
-                    $order->add_order_note("Payment Status: Cancelled{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Cancelled{$with_warning_msg}" . "<br>pipwave Transaction ID: {$pw_id}<br>{$extra_note}");
                     $order->update_status('cancelled', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == 10) { // complete
-                    $order->add_order_note("Payment Status: Complete{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Complete{$with_warning_msg}" . "<br>pipwave Transaction ID: {$pw_id}<br>{$extra_note}");
                     $order->update_status('processing', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                     $order->payment_complete();
                 } else if ($transaction_status == 20) { // refunded
-                    $order->add_order_note("Payment Status: Refunded{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Refunded{$with_warning_msg}" . "<br>pipwave Transaction ID: {$pw_id}<br>{$extra_note}");
                     $order->update_status('refunded', sprintf(__('Payment %s via %s.', 'woocommerce'), $pw_id, $payment_method));
                 } else if ($transaction_status == -1) {
                     $order->add_order_note('Signature mismatch.' . '<br>pipwave Transaction ID: ' . $pw_id);
                 } else if ($transaction_status == 5) {
-                    $order->add_order_note("Payment Status: Pending{$with_warning_msg}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Payment Status: Pending{$with_warning_msg}" . "<br>pipwave Transaction ID: {$pw_id}<br>{$extra_note}");
                     do_action('pipwave_wc_update_payment_method', array('order_id' => $order_id, 'payment_method' => $payment_method));
                 } else {
-                    $order->add_order_note("Undefined transaction status {$transaction_status}" . '<br>pipwave Transaction ID: ' . $pw_id);
+                    $order->add_order_note("Undefined transaction status {$transaction_status}" . "<br>pipwave Transaction ID: {$pw_id}<br>{$extra_note}");
                 }
             }
         }
