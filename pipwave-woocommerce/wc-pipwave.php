@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.1.0
+ * @version 1.1.1
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.1.0
+ * Version: 1.1.1
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
@@ -248,7 +248,7 @@ function pipwave_woocommerce() {
             );
             $data['signature'] = $this->_pipwave_wc_generate_signature($signatureParam);
 
-            foreach ($order->get_items() as $item) {
+            /*foreach ($order->get_items() as $item) {
                 $product = $order->get_product_from_item($item);
                 $data['item_info'][] = array(
                     "name" => $item['name'],
@@ -258,7 +258,7 @@ function pipwave_woocommerce() {
                     "quantity" => $item['qty'],
                     "sku" => $product->get_sku()
                 );
-            }
+            }*/
 
             $response = $this->_pipwave_wc_send_request($data);
             if ($response['status'] == 200) {
