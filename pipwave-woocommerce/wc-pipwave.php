@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.1.1
+ * @version 1.1.2
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.1.1
+ * Version: 1.1.2
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
@@ -179,6 +179,14 @@ function pipwave_woocommerce() {
          */
         public function generate_form($order_id) {
             $order = new WC_Order($order_id);
+
+            $shipping_amount = WC()->cart->shipping_total;
+            if ($this->tax_display_cart == 'excl') {
+                //
+            } else {
+                $shipping_amount += WC()->cart->shipping_tax_total;
+            }
+
             $data = array(
                 'action' => 'initiate-payment',
                 'timestamp' => time(),
@@ -186,6 +194,7 @@ function pipwave_woocommerce() {
                 'txn_id' => $order->get_order_number() . "",
                 'amount' => $order->order_total,
                 'currency_code' => get_woocommerce_currency(),
+                'shipping_amount' => number_format($shipping_amount, 2, '.', ''),
                 'short_description' => 'Payment for Order#' . $order->id,
                 'session_info' => array(
                     'ip_address' => $order->customer_ip_address,
@@ -231,6 +240,19 @@ function pipwave_woocommerce() {
                     'notification_extra_param1' => $order_id . ""
                 )
             );
+            $handling_fee = 0;
+            $discount = 0; // Some merchants using negative fee amount to perform global cart discount
+            foreach (WC()->cart->fees as $cart_fee) {
+                if ($cart_fee->amount < 0) {
+                    $amount = -($cart_fee->amount);
+                    $tax = -($cart_fee->tax);
+                    $discount += ($amount + $tax);
+                } else {
+                    $handling_fee += ($cart_fee->amount + $cart_fee->tax);
+                }
+            }
+            $data['handling_amount'] = $handling_fee;
+            
             // Login user
             if ($order->customer_user) {
                 $buyer = get_user_by('id', $order->customer_user);
@@ -248,7 +270,7 @@ function pipwave_woocommerce() {
             );
             $data['signature'] = $this->_pipwave_wc_generate_signature($signatureParam);
 
-            /*foreach ($order->get_items() as $item) {
+            foreach ($order->get_items() as $item) {
                 $product = $order->get_product_from_item($item);
                 $data['item_info'][] = array(
                     "name" => $item['name'],
@@ -258,7 +280,7 @@ function pipwave_woocommerce() {
                     "quantity" => $item['qty'],
                     "sku" => $product->get_sku()
                 );
-            }*/
+            }
 
             $response = $this->_pipwave_wc_send_request($data);
             if ($response['status'] == 200) {
