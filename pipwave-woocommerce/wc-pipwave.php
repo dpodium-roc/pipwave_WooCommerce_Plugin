@@ -235,7 +235,7 @@ function pipwave_woocommerce() {
                 ),
                 'api_override' => array(
                     'success_url' => $this->get_return_url($order),
-                    'fail_url' => $this->get_return_url($order),
+                    'fail_url' => wc_get_cart_url(),
                     'notification_url' => str_replace('https:', 'http:', add_query_arg('wc-api', 'WC_Gateway_Pipwave', home_url('/'))),
                     'notification_extra_param1' => $order_id . ""
                 )
