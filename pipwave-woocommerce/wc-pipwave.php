@@ -3,7 +3,7 @@
  * pipwave WooCommerce Shopping Cart Plugin
  * 
  * @author pipwave <support@pipwave.com>
- * @version 1.1.2
+ * @version 1.1.4
  */
 
 /**
@@ -12,7 +12,7 @@
  * Description: WooCommerce pipwave | Simple, reliable and cost-effective that helps WooCommerce merchants sell online. It's FREE!
  * Author: pipwave
  * Author URI: https://www.pipwave.com/
- * Version: 1.1.2
+ * Version: 1.1.4
  * License: GPLv3
  */
 function pipwave_wc_require_woocommerce() {
@@ -35,6 +35,15 @@ function pipwave_woocommerce() {
     load_plugin_textdomain('wc_pipwave', false, dirname(plugin_basename(__FILE__)) . '/languages/');
     // Add pipwave gateway to WooCommerce
     add_filter('woocommerce_payment_gateways', 'add_pipwave');
+    // Show messages
+    add_action('woocommerce_before_cart', 'pipwave_wc_display_message');
+
+    function pipwave_wc_display_message() {
+        if (isset($_GET['pw_message'])) {
+            wc_add_notice($_GET['pw_message'], 'error');
+            wc_print_notices();
+        }
+    }
 
     function add_pipwave($methods) {
         $methods[] = 'WC_Gateway_Pipwave';
